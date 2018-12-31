@@ -1,0 +1,38 @@
+##Below code is for training and testing with N-gram taggers. We split the brown corpus into 70:30 training and 
+#testing and then generate the N-gram model on the 70% training data and evaluate on remaining 30% testing data.
+
+import nltk
+import pdb
+from nltk import word_tokenize, sent_tokenize
+from nltk.corpus import brown
+from pickle import dump
+def ngramTagger(train_sents, n=0, defaultTag='NN'):
+    
+    t0 = nltk.DefaultTagger(defaultTag)
+    if (n <= 0):
+        return t0
+    elif (n == 1):
+        t1 = nltk.UnigramTagger(train_sents, backoff=t0)
+        return t1
+    elif (n == 2):
+        t1 = nltk.UnigramTagger(train_sents, backoff=t0)
+        t2 = nltk.BigramTagger(train_sents, backoff=t1)
+        return t2
+    else:
+        t1 = nltk.UnigramTagger(train_sents, backoff=t0)
+        t2 = nltk.BigramTagger(train_sents, backoff=t1)
+        t3 = nltk.TrigramTagger(train_sents, backoff=t2)
+        return t3
+    
+brown_tagged_sents = brown.tagged_sents()
+
+size = int(len(brown_tagged_sents) * 0.7)
+tags = [tag for (word, tag) in brown.tagged_words()]
+defaultTag = nltk.FreqDist(tags).max()
+print(defaultTag)
+train_sents = brown_tagged_sents[:size]
+test_sents = brown_tagged_sents[size:]
+
+tagger = ngramTagger(train_sents, 2, defaultTag)
+print(tagger.evaluate(test_sents))
+print(tagger.tag('hi, donal trump is dump person'.split()))
